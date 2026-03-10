@@ -1,0 +1,106 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}}
+\fs24
+\b Project Proposal — Foodie (Food Tinder)\b0\par
+\par
+\b Course:\b0 Mobile App Development\par
+\b Section:\b0 MW 5:30\par
+\b Team Name:\b0 TMAK Tech\par
+\b Proposal Date:\b0 03/09/2026\par
+\b GitHub Repository URL:\b0 https://github.com/Tmaku18/foodie\par
+\b Word Document File Name:\b0 Project1_Proposal_Foodie_Tanaka_Makuvaza.doc\par
+\par
+\b Project Summary\par\b0
+I’m proposing a graduate-level Flutter application called \b Foodie\b0  — a “Tinder for Food” experience that helps students discover \b on-campus restaurants within walking distance\b0  through a swipe interface. The core loop is simple: I show one restaurant at a time with photos and key info; the user swipes right to “match” and save it into a local basket, or swipes left to discard it for the current session.\par
+\par
+This project is \b offline-first\b0  and follows the course rule of \b NO cloud-based storage\b0 . All restaurant data, menus, and demo ratings are mocked and stored locally (seeded into SQLite and/or bundled local assets). Settings are stored using SharedPreferences.\par
+\par
+\b Target Users\par\b0
+Students who want quick, low-effort restaurant suggestions near campus, plus a saved “basket” of places they matched.\par
+\par
+\b Core Features (High-Level)\par\b0
+\tab - On-campus restaurant discovery within a walking-distance radius (no GPS)\par
+\tab - Swipe deck for restaurants (right = save match; left = discard session)\par
+\tab - Restaurant detail view with menu, website link, and tap-to-call phone number\par
+\tab - “Empty Basket” screen powered by SQLite (view/delete/clear)\par
+\tab - Settings screen (dark mode, units, notifications toggle)\par
+\tab - Graduate extras: background task + local notifications + export to file (JSON/CSV)\par
+\par
+\b Local Storage Plan (No Cloud)\par\b0
+\tab - SQLite (sqflite): restaurants, menu items, matches (basket), and editable notes/reviews.\par
+\tab - SharedPreferences: theme mode (dark/light), units (mi/km), notification toggle.\par
+\tab - File system: export basket/reviews to documents directory as JSON/CSV.\par
+\par
+\b Architecture + State Management Intent (Graduate)\par\b0
+I will use \b Clean Architecture\b0  with clear separation of Data / Domain / Presentation layers and the Repository pattern. For state management, I will use \b BLoC with Cubit (flutter_bloc)\b0  so UI updates are reactive and business rules remain testable and independent from widgets. Dependencies will be wired through \b get_it\b0  (dependency injection/service locator).\par
+\par
+\b Proposed Group\par\b0
+(Fill in the final team roster as needed.)\par
+\par
+Member\tab Student ID\tab Role / Responsibility\tab Signed Date\par
+1\tab Tanaka Makuvaza\tab 002252191\tab Architecture + BLoC/Cubit + SQLite + Testing + Docs\tab 03/09/2026\par
+2\tab TBD\tab TBD\tab UI/UX + Assets + Swipe UI + Animations\tab TBD\par
+3\tab TBD\tab TBD\tab Notifications + Background task + Export/Import + Integration testing\tab TBD\par
+\par
+\b Wireframe Plan Details\par\b0
+Below is my wireframe plan (screens, transitions, and primary use cases). I’ll iterate on these screens with quick prototypes, user-flow checks, and test/refine cycles.\par
+\par
+\b Screen List (Minimum 5)\par\b0
+1) \b Onboarding / Welcome\b0\par
+\tab - Purpose: explain how the app works (swipe right/left), clarify it’s offline-first, and set an initial walking-distance radius (\b default: 2 miles\b0 ).\par
+\tab - Edge cases: none for permissions (no GPS); handle empty data gracefully.\par
+\tab - Transition: continue to Discover after onboarding is completed.\par
+\par
+2) \b Discover (Swipe Deck)\b0\par
+\tab - Purpose: main swipe experience (restaurant cards).\par
+\tab - Card content: building/exterior photo first; food photos in auto-advancing carousel; distance + estimated travel minutes.\par
+\tab - Gestures: swipe right saves match; swipe left discards for session.\par
+\tab - Transition: tap card to open Restaurant Details.\par
+\par
+3) \b Restaurant Details\b0\par
+\tab - Purpose: deeper profile view.\par
+\tab - Includes: menu (mocked/local), ratings (mocked/local), website link, tap-to-call.\par
+\tab - Actions: add/edit a note/review (CRUD), optionally add/remove from basket.\par
+\par
+4) \b Basket\b0\par
+\tab - Purpose: view matched restaurants saved in SQLite.\par
+\tab - Actions: delete a single item, or “Empty Basket” to clear all (with explicit animation + confirmation dialog).\par
+\tab - Transition: tap an item to open Restaurant Details.\par
+\par
+5) \b Settings\b0\par
+\tab - Purpose: user preferences stored in SharedPreferences.\par
+\tab - Toggles: dark mode, units (mi/km) or travel mode (walk/drive estimate), notifications on/off.\par
+\par
+\b Navigation & Transitions\par\b0
+\tab - BottomNavigationBar for Discover / Basket / Settings.\par
+\tab - Details screen pushed from Discover and Basket.\par
+\tab - Onboarding shown first until the user completes/dismisses it.\par
+\par
+\b Data Flow (User Story Walkthrough)\par\b0
+\tab 1) User opens app → onboarding explains the app + sets walking radius (default: 2 miles).\par
+\tab 2) Discover loads restaurants from local SQLite seed → filters to the walking radius and shows distance/walk-time from a campus center.\par
+\tab 3) User swipes right → app inserts BasketMatch into SQLite.\par
+\tab 4) Basket screen reads matches from SQLite and displays them.\par
+\tab 5) User taps “Empty Basket” → app deletes all BasketMatch rows → UI animates clearing.\par
+\par
+\b CRUD Evidence Plan (Required)\par\b0
+\tab - Create: swipe-right inserts BasketMatch; add note inserts Review/Note.\par
+\tab - Read: list restaurants; list basket; read menu + ratings in details.\par
+\tab - Update: edit an existing review/note.\par
+\tab - Delete: delete one basket item; delete all via Empty Basket.\par
+\par
+\b Graduate Advanced Features Plan\par\b0
+\tab - Local notifications: daily/periodic reminder like “Today’s top pick.”\par
+\tab - Background processing: schedule a task that selects the day’s pick from local history.\par
+\tab - File system: export basket/reviews to JSON/CSV.\par
+\tab - Animations: explicit swipe transitions + explicit “empty basket” animation.\par
+\par
+\b Testing Plan (Graduate)\par\b0
+\tab - Unit tests (10+): domain use cases, cubits, validation logic.\par
+\tab - Widget tests: swipe deck interaction + basket empty flow.\par
+\tab - Integration test: swipe-right persists, then appears in basket on next launch.\par
+\tab - Coverage: provide command and output via flutter test --coverage.\par
+\par
+\b Version Control + Execution Plan\par\b0
+I will maintain steady progress in GitHub with small, meaningful commits and feature branches. My goal is at least \b 20+ commits per contributor\b0  with clear commit messages, plus pull requests for major features. This will make the work easy to review and aligns with the course’s commit activity enforcement.\par
+}
