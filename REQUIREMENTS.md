@@ -97,6 +97,28 @@ I will implement **at least** these screens:
   - Cubits manage feature states; UI reacts via BlocBuilder/BlocListener/BlocSelector.
   - Business rules live in Domain use cases, not widget code.
 
+### Why BLoC (and why not Provider or Riverpod?)
+
+The project guide allows **Provider**, **Riverpod**, or **BLoC**. I’m using **BLoC with Cubit** for these reasons, in plain English:
+
+**Why BLoC fits this project**
+
+- **Clear split between UI and logic.** The screen only shows state and calls methods (e.g. “load basket”, “empty basket”). All real logic lives in Cubits and use cases, so it’s easy to explain in ARCHITECTURE.md and in the demo: “UI talks to Cubit, Cubit talks to use cases, use cases talk to repositories.”
+- **Works naturally with Clean Architecture.** We have Data / Domain / Presentation. BLoC/Cubit sits in Presentation and only uses Domain (use cases). It never touches SQLite or SharedPreferences directly, so the dependency rule stays clean.
+- **Easier to test.** The rubric asks for unit tests (10+) and widget tests. With BLoC, I can test “swipe right saves to basket” and “empty basket deletes all” by testing the Cubit and use cases alone, without building the full UI. Then I test the widgets separately. That keeps tests fast and focused.
+- **Predictable updates.** State is immutable and emitted in a stream. The UI listens with BlocBuilder/BlocListener. There’s one clear place for “what is the current state?” and no setState scattered around, which helps when we add things like radius filters or notifications.
+- **Cubit vs full Bloc.** For most screens we don’t need a full event stream (tap → event → new state). Simple actions like “load basket” or “delete item” are just method calls. Cubit (methods that emit new state) keeps the code smaller while still giving the same testability and separation.
+
+**Why not Provider?**
+
+- Provider is quick to set up and good for small apps, but the logic often ends up mixed with the UI or inside ChangeNotifier. For a graduate project we need a clear “business logic layer” that we can point to and test. BLoC keeps that layer explicit (Cubits + use cases) and makes it obvious where the rules live. With Provider it’s easier to slip into putting logic in widgets or one big notifier, which is harder to test and to document in ARCHITECTURE.md.
+
+**Why not Riverpod?**
+
+- Riverpod is strong and testable, and doesn’t depend on BuildContext. For this project, BLoC was chosen because (1) the rubric explicitly lists “BLoC” and it’s a common interview/portfolio talking point, (2) the event/state model (or Cubit’s method → state) is easy to draw and explain in a report, and (3) the team is already aligned on Clean Architecture with use cases—Cubits “orchestrate” use cases in a way that’s easy to describe. Riverpod would work too, but BLoC gives a simple, defensible story for “why this pattern” in the write-up and presentation.
+
+**Bottom line:** BLoC (with Cubit) gives a clear, testable split between UI and logic, fits Clean Architecture, and makes it straightforward to meet the graduate state-management requirement and to explain the choice in the report and demo.
+
 ## Graduate advanced features (explicitly required)
 
 - **Background processing**: schedule a background task that prepares “Today’s Picks” using local data.
