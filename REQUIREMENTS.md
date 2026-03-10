@@ -1,7 +1,4 @@
-# Foodie (Offline-First) — Requirements (Conversational)
-
-This document is my “plain English” requirements checklist for **Foodie**, written to match the project guide + grading rubric and to stay consistent with the plan in `.cursor/plans/foodie_flutter_offline-first_333a039e.plan.md`.
-
+# Foodie (Offline-First) 
 ## What I’m building (quickly)
 
 **Foodie** is a “Tinder for Food” Flutter app for students: I show restaurant cards one at a time, and the user **swipes right** to match (save it) or **swipes left** to skip it (for the current session). Matches go into an **Empty Basket** screen and are saved locally so they persist across app restarts.
