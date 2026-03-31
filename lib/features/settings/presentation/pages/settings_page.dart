@@ -6,8 +6,21 @@ import 'package:foodie/core/services/local_notification_service.dart';
 import 'package:foodie/features/discover/presentation/cubit/discover_cubit.dart';
 import 'package:foodie/features/settings/presentation/cubit/settings_cubit.dart';
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  late Future<List<int>> _picksFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _picksFuture = getIt<BackgroundPicksService>().getTodaysPicks();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +65,9 @@ class SettingsPage extends StatelessWidget {
             onPressed: () async {
               final restaurants = context.read<DiscoverCubit>().state.restaurants.map((e) => e.id).toList();
               await picksService.prepareTodaysPicks(restaurants);
+              setState(() {
+                _picksFuture = picksService.getTodaysPicks();
+              });
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Today\'s Picks refreshed')));
             },
@@ -68,6 +84,16 @@ class SettingsPage extends StatelessWidget {
                 : null,
             icon: const Icon(Icons.notifications_active),
             label: const Text('Send local reminder now'),
+          ),
+          const SizedBox(height: 12),
+          FutureBuilder<List<int>>(
+            future: _picksFuture,
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Text('Today\'s Picks: loading...');
+              }
+              return Text('Today\'s Picks: ${snapshot.data!.join(', ')}');
+            },
           ),
         ],
       ),
