@@ -5,6 +5,7 @@
 .flutter-plugins-dependencies
 .pub-cache/
 build/
+coverage/
 
 # IDEs
 .idea/
