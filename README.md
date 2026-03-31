@@ -25,6 +25,10 @@ flutter test
 flutter run
 ```
 
+## Repository Workflow
+
+`foodie-atomic-main` is the default mainline branch for this repository.
+
 ## Repo Hygiene Before Feature Work
 
 Run these checks before starting each implementation step:
@@ -37,17 +41,18 @@ git remote -v
 
 Expected baseline:
 
-- Branch is `foodie-main`.
+- Branch is `foodie-atomic-main`.
 - Working tree is clean.
 - Remote points to `https://github.com/Tmaku18/foodie.git`.
 - `.cursor/` is ignored via `.gitignore`.
 
-Commit discipline:
+Commit discipline (required):
 
 1. Complete one scoped step.
 2. Commit with meaningful intent.
 3. Push immediately.
 4. Continue only after push succeeds.
+5. Prefer small, file-focused commits so history is easy to audit.
 
 ## Project Structure
 
