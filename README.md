@@ -29,24 +29,7 @@ flutter run
 
 `foodie-atomic-main` is the default mainline branch for this repository.
 
-## Repo Hygiene Before Feature Work
-
-Run these checks before starting each implementation step:
-
-```bash
-git status -sb
-git branch --show-current
-git remote -v
-```
-
-Expected baseline:
-
-- Branch is `foodie-atomic-main`.
-- Working tree is clean.
-- Remote points to `https://github.com/Tmaku18/foodie.git`.
-- `.cursor/` is ignored via `.gitignore`.
-
-Commit discipline (required):
+## Commit Discipline
 
 1. Complete one scoped step.
 2. Commit with meaningful intent.
