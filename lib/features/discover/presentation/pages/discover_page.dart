@@ -17,6 +17,9 @@ class DiscoverPage extends StatelessWidget {
         if (state.loading) {
           return const Center(child: CircularProgressIndicator());
         }
+        if (state.error != null) {
+          return Center(child: Text(state.error!));
+        }
 
         final visible = state.visible.where((r) => r.distanceMiles <= settings.walkingRadius).toList(growable: false);
         if (visible.isEmpty) {
