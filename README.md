@@ -1,23 +1,68 @@
-# Foodie (Food Tinder) — Offline-First Flutter App
+# Foodie (Food Tinder) - Offline-First Flutter App
 
-**Foodie** is a graduate-level Flutter app that works like a “Tinder for Food” to help students discover **on-campus restaurants within walking distance** (default: **2 miles**).
+Foodie is a Flutter app that helps students choose nearby campus food using a swipe-first experience.
 
-## Core idea
+## Core User Flow
 
-- Swipe right to **match** a restaurant (saved locally to SQLite)
-- Swipe left to skip it for the session
-- View saved matches in the **Basket** and clear them with **Empty Basket**
+- Swipe right to match a restaurant (saved to SQLite).
+- Swipe left to skip for the current app session.
+- Tap a card to open details, menu, and notes.
+- Open Basket to remove matches or clear all with animation.
 
-## Offline-first + local-only
+## Non-Negotiable Scope
 
-- No cloud storage/services
-- No external restaurant APIs
-- Restaurant/menu/ratings data is seeded locally
+- Offline-only architecture (no cloud backend, no external restaurant APIs).
+- Local persistence with SQLite for app entities and `SharedPreferences` for settings.
+- BLoC/Cubit state management with `get_it` dependency injection.
+- Walking-radius filtering based on seeded distance data (no GPS permission).
 
-## Docs
+## Run Locally
 
-- See `REQUIREMENTS.md` for the rubric-aligned checklist.
-- See `docs/REQUIREMENTS_COMPLIANCE_MATRIX.md` for requirement-to-implementation mapping.
-- See `docs/FLUTTER_STEP_BY_STEP_IMPLEMENTATION.md` for beginner-friendly phased execution.
-- See `docs/MILESTONE_VERIFICATION_GATES.md` for completion criteria at each milestone.
+```bash
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
+
+## Repo Hygiene Before Feature Work
+
+Run these checks before starting each implementation step:
+
+```bash
+git status -sb
+git branch --show-current
+git remote -v
+```
+
+Expected baseline:
+
+- Branch is `foodie-main`.
+- Working tree is clean.
+- Remote points to `https://github.com/Tmaku18/foodie.git`.
+- `.cursor/` is ignored via `.gitignore`.
+
+Commit discipline:
+
+1. Complete one scoped step.
+2. Commit with meaningful intent.
+3. Push immediately.
+4. Continue only after push succeeds.
+
+## Project Structure
+
+- `lib/app/`: app shell and top-level navigation.
+- `lib/core/`: db, DI, settings, and local services.
+- `lib/data/`: local repository + seed data.
+- `lib/domain/`: repository contracts.
+- `lib/features/`: onboarding, discover, details, basket, settings.
+- `test/`: unit and widget tests.
+- `integration_test/`: end-to-end flows.
+
+## Documentation
+
+- `REQUIREMENTS.md`: rubric-aligned requirements.
+- `docs/REQUIREMENTS_COMPLIANCE_MATRIX.md`: requirement status and evidence.
+- `docs/FLUTTER_STEP_BY_STEP_IMPLEMENTATION.md`: beginner walkthrough.
+- `docs/MILESTONE_VERIFICATION_GATES.md`: acceptance gates by phase.
 
