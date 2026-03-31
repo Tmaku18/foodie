@@ -1,0 +1,76 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:foodie/core/di/injection.dart';
+import 'package:foodie/core/services/background_picks_service.dart';
+import 'package:foodie/core/services/local_notification_service.dart';
+import 'package:foodie/features/discover/presentation/cubit/discover_cubit.dart';
+import 'package:foodie/features/settings/presentation/cubit/settings_cubit.dart';
+
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<SettingsCubit>().state;
+    final picksService = getIt<BackgroundPicksService>();
+    final notifications = getIt<LocalNotificationService>();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Settings')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SwitchListTile(
+            title: const Text('Dark mode'),
+            value: state.isDarkMode,
+            onChanged: (value) => context.read<SettingsCubit>().setDarkMode(value),
+          ),
+          SwitchListTile(
+            title: const Text('Notifications'),
+            value: state.notificationsEnabled,
+            onChanged: (value) => context.read<SettingsCubit>().setNotificationsEnabled(value),
+          ),
+          const SizedBox(height: 8),
+          Text('Walking radius: ${state.walkingRadius.toStringAsFixed(1)} miles'),
+          Slider(
+            min: 0.5,
+            max: 5.0,
+            divisions: 9,
+            value: state.walkingRadius,
+            label: state.walkingRadius.toStringAsFixed(1),
+            onChanged: (value) => context.read<SettingsCubit>().setWalkingRadius(value),
+          ),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'mi', label: Text('Miles')),
+              ButtonSegment(value: 'km', label: Text('Kilometers')),
+            ],
+            selected: {state.units},
+            onSelectionChanged: (set) => context.read<SettingsCubit>().setUnits(set.first),
+          ),
+          const Divider(),
+          FilledButton.icon(
+            onPressed: () async {
+              final restaurants = context.read<DiscoverCubit>().state.restaurants.map((e) => e.id).toList();
+              await picksService.prepareTodaysPicks(restaurants);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Today\'s Picks refreshed')));
+            },
+            icon: const Icon(Icons.sync),
+            label: const Text('Run background picks job'),
+          ),
+          FilledButton.tonalIcon(
+            onPressed: state.notificationsEnabled
+                ? () async {
+                    await notifications.showTopPickReminder();
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Reminder sent')));
+                  }
+                : null,
+            icon: const Icon(Icons.notifications_active),
+            label: const Text('Send local reminder now'),
+          ),
+        ],
+      ),
+    );
+  }
+}
