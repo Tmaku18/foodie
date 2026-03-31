@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:foodie/core/db/app_database.dart';
+import 'package:foodie/core/services/advanced_features_coordinator.dart';
 import 'package:foodie/core/services/background_picks_service.dart';
 import 'package:foodie/core/services/file_export_service.dart';
 import 'package:foodie/core/services/local_notification_service.dart';
@@ -19,12 +20,16 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<PreferencesService>(PreferencesService.new);
   getIt.registerLazySingleton<FileExportService>(FileExportService.new);
   getIt.registerLazySingleton<BackgroundPicksService>(BackgroundPicksService.new);
+  getIt.registerLazySingleton<AdvancedFeaturesCoordinator>(
+    () => AdvancedFeaturesCoordinator(getIt<BackgroundPicksService>(), getIt<FoodRepository>()),
+  );
   getIt.registerLazySingleton<LocalNotificationService>(LocalNotificationService.new);
   getIt.registerLazySingleton<LocalFoodRepository>(() => LocalFoodRepository(getIt<AppDatabase>()));
   getIt.registerLazySingleton<FoodRepository>(() => getIt<LocalFoodRepository>());
 
   await getIt<LocalFoodRepository>().ensureSeeded();
   await getIt<LocalNotificationService>().init();
+  await getIt<AdvancedFeaturesCoordinator>().start();
 
   getIt.registerFactory(() => SettingsCubit(getIt<PreferencesService>()));
   getIt.registerFactory(() => DiscoverCubit(getIt<FoodRepository>()));
