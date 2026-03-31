@@ -24,17 +24,41 @@ class _AppRootState extends State<AppRoot> {
     }
 
     final pages = const [DiscoverPage(), BasketPage(), SettingsPage()];
-    return Scaffold(
-      body: IndexedStack(index: _index, children: pages),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _index,
-        onDestinationSelected: (index) => setState(() => _index = index),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.local_fire_department), label: 'Discover'),
-          NavigationDestination(icon: Icon(Icons.shopping_basket), label: 'Basket'),
-          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
-        ],
-      ),
+    final destinations = const [
+      NavigationDestination(icon: Icon(Icons.local_fire_department), label: 'Discover'),
+      NavigationDestination(icon: Icon(Icons.shopping_basket), label: 'Basket'),
+      NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useRail = constraints.maxWidth >= 700;
+        if (!useRail) {
+          return Scaffold(
+            body: IndexedStack(index: _index, children: pages),
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: _index,
+              onDestinationSelected: (index) => setState(() => _index = index),
+              destinations: destinations,
+            ),
+          );
+        }
+        return Scaffold(
+          body: Row(
+            children: [
+              NavigationRail(
+                selectedIndex: _index,
+                onDestinationSelected: (index) => setState(() => _index = index),
+                destinations: destinations
+                    .map((item) => NavigationRailDestination(icon: item.icon, label: Text(item.label)))
+                    .toList(growable: false),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: IndexedStack(index: _index, children: pages)),
+            ],
+          ),
+        );
+      },
     );
   }
 }
