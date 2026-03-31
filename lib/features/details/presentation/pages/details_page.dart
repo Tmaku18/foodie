@@ -46,6 +46,12 @@ class _DetailsPageState extends State<DetailsPage> {
     await _load();
   }
 
+  Future<void> _deleteNote(int noteId) async {
+    await _repo.deleteNote(noteId);
+    _noteController.clear();
+    await _load();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +79,19 @@ class _DetailsPageState extends State<DetailsPage> {
                 ),
                 const SizedBox(height: 8),
                 FilledButton(onPressed: _saveNote, child: const Text('Save note')),
+                if (_notes.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text('Saved notes', style: Theme.of(context).textTheme.titleMedium),
+                  for (final note in _notes)
+                    ListTile(
+                      title: Text(note.text),
+                      subtitle: Text('Updated ${note.updatedAt.toLocal()}'),
+                      trailing: IconButton(
+                        onPressed: () => _deleteNote(note.id),
+                        icon: const Icon(Icons.delete_outline),
+                      ),
+                    ),
+                ],
               ],
             ),
     );
