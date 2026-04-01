@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const _dbName = 'foodie.db';
-  static const _dbVersion = 1;
+  static const _dbVersion = 2;
 
   Database? _db;
 
@@ -28,7 +28,12 @@ class AppDatabase {
             distance_miles REAL NOT NULL,
             rating REAL NOT NULL,
             building_image_asset TEXT NOT NULL,
-            food_images_csv TEXT NOT NULL
+            food_images_csv TEXT NOT NULL,
+            external_place_id TEXT,
+            source TEXT,
+            latitude REAL,
+            longitude REAL,
+            address_text TEXT
           )
         ''');
         await db.execute('''
@@ -55,6 +60,15 @@ class AppDatabase {
             updated_at INTEGER NOT NULL
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE restaurants ADD COLUMN external_place_id TEXT');
+          await db.execute('ALTER TABLE restaurants ADD COLUMN source TEXT');
+          await db.execute('ALTER TABLE restaurants ADD COLUMN latitude REAL');
+          await db.execute('ALTER TABLE restaurants ADD COLUMN longitude REAL');
+          await db.execute('ALTER TABLE restaurants ADD COLUMN address_text TEXT');
+        }
       },
     );
   }
