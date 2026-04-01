@@ -25,6 +25,24 @@ flutter test
 flutter run
 ```
 
+## Optional Real-Data Refresh (Google Places)
+
+The app still reads from local SQLite at runtime. You can optionally refresh local restaurant rows from Google Places for a 2-mile radius around GSU Student Center East.
+
+Run with an API key:
+
+```bash
+flutter run --dart-define=GOOGLE_MAPS_API_KEY=your_api_key
+```
+
+Then in app:
+- Open `Settings`
+- Tap `Refresh from Google Places`
+
+Notes:
+- Runtime remains local-first after import.
+- If the API call fails, existing local SQLite data is preserved.
+
 ## Repository Workflow
 
 `foodie-atomic-main` is the default mainline branch for this repository.
