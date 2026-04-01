@@ -2,6 +2,7 @@ import 'package:foodie/core/models.dart';
 
 abstract class FoodRepository {
   Future<List<Restaurant>> getRestaurants();
+  Future<int> refreshRestaurantsFromGoogle();
   Future<List<MenuItem>> getMenuByRestaurant(int restaurantId);
   Future<void> addBasketMatch(int restaurantId);
   Future<void> removeBasketMatch(int matchId);
