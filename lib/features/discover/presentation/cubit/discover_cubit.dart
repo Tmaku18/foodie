@@ -66,6 +66,19 @@ class DiscoverCubit extends Cubit<DiscoverState> {
     emit(state.copyWith(visible: nextVisible));
   }
 
+  Future<int> refreshFromGoogleImport() async {
+    emit(state.copyWith(loading: true, error: null));
+    try {
+      final count = await _repo.refreshRestaurantsFromGoogle();
+      final restaurants = await _repo.getRestaurants();
+      emit(state.copyWith(restaurants: restaurants, visible: restaurants, loading: false));
+      return count;
+    } catch (_) {
+      emit(state.copyWith(loading: false, error: 'Failed to refresh from Google Places'));
+      rethrow;
+    }
+  }
+
   void swipeLeft(Restaurant restaurant, {double? radiusMiles}) {
     final skipped = {...state.sessionSkipped, restaurant.id};
     final filtered = state.restaurants.where((r) {
