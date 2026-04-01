@@ -1,12 +1,14 @@
 import 'package:foodie/core/db/app_database.dart';
 import 'package:foodie/core/models.dart';
+import 'package:foodie/data/import/google_places_import_service.dart';
 import 'package:foodie/data/seed/seed_data.dart';
 import 'package:foodie/domain/repositories/food_repository.dart';
 
 class LocalFoodRepository implements FoodRepository {
-  LocalFoodRepository(this._database);
+  LocalFoodRepository(this._database, this._googlePlacesImportService);
 
   final AppDatabase _database;
+  final GooglePlacesImportService _googlePlacesImportService;
 
   Future<void> ensureSeeded() async {
     final db = await _database.database;
@@ -23,6 +25,7 @@ class LocalFoodRepository implements FoodRepository {
         'rating': restaurant.rating,
         'building_image_asset': restaurant.buildingImageAsset,
         'food_images_csv': restaurant.foodImageAssets.join(','),
+        'source': 'seed_local',
       });
     }
     for (final item in demoMenuItems) {
@@ -127,6 +130,45 @@ class LocalFoodRepository implements FoodRepository {
   }
 
   @override
+  Future<int> refreshRestaurantsFromGoogle() async {
+    final imported = await _googlePlacesImportService.fetchNearbyRestaurants();
+    final db = await _database.database;
+    final batch = db.batch();
+    for (final record in imported) {
+      final existing = await db.query(
+        'restaurants',
+        columns: ['id'],
+        where: 'external_place_id = ?',
+        whereArgs: [record.externalPlaceId],
+        limit: 1,
+      );
+      final id = existing.isNotEmpty ? existing.first['id'] as int : _stableIntId(record.externalPlaceId);
+      final payload = {
+        'id': id,
+        'name': record.name,
+        'category': record.category,
+        'distance_miles': record.distanceMiles,
+        'rating': record.rating,
+        'building_image_asset': 'assets/images/restaurant_building.png',
+        'food_images_csv': 'assets/images/food_1.png,assets/images/food_2.png,assets/images/food_3.png',
+        'external_place_id': record.externalPlaceId,
+        'source': record.source,
+        'latitude': record.latitude,
+        'longitude': record.longitude,
+        'address_text': record.addressText,
+      };
+
+      if (existing.isNotEmpty) {
+        batch.update('restaurants', payload, where: 'id = ?', whereArgs: [id]);
+      } else {
+        batch.insert('restaurants', payload);
+      }
+    }
+    await batch.commit(noResult: true);
+    return imported.length;
+  }
+
+  @override
   Future<void> removeBasketMatch(int matchId) async {
     final db = await _database.database;
     await db.delete('basket_matches', where: 'id = ?', whereArgs: [matchId]);
@@ -158,5 +200,13 @@ class LocalFoodRepository implements FoodRepository {
       where: 'id = ?',
       whereArgs: [existing.first['id']],
     );
+  }
+
+  int _stableIntId(String value) {
+    var hash = 0;
+    for (final codeUnit in value.codeUnits) {
+      hash = ((hash * 31) + codeUnit) & 0x7fffffff;
+    }
+    return hash;
   }
 }
