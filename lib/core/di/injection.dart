@@ -5,6 +5,7 @@ import 'package:foodie/core/services/background_picks_service.dart';
 import 'package:foodie/core/services/file_export_service.dart';
 import 'package:foodie/core/services/local_notification_service.dart';
 import 'package:foodie/core/settings/preferences_service.dart';
+import 'package:foodie/data/import/google_places_import_service.dart';
 import 'package:foodie/data/repositories/local_food_repository.dart';
 import 'package:foodie/domain/repositories/food_repository.dart';
 import 'package:foodie/features/basket/presentation/cubit/basket_cubit.dart';
@@ -19,12 +20,15 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<AppDatabase>(AppDatabase.new);
   getIt.registerLazySingleton<PreferencesService>(PreferencesService.new);
   getIt.registerLazySingleton<FileExportService>(FileExportService.new);
+  getIt.registerLazySingleton<GooglePlacesImportService>(GooglePlacesImportService.new);
   getIt.registerLazySingleton<BackgroundPicksService>(BackgroundPicksService.new);
   getIt.registerLazySingleton<AdvancedFeaturesCoordinator>(
     () => AdvancedFeaturesCoordinator(getIt<BackgroundPicksService>(), getIt<FoodRepository>()),
   );
   getIt.registerLazySingleton<LocalNotificationService>(LocalNotificationService.new);
-  getIt.registerLazySingleton<LocalFoodRepository>(() => LocalFoodRepository(getIt<AppDatabase>()));
+  getIt.registerLazySingleton<LocalFoodRepository>(
+    () => LocalFoodRepository(getIt<AppDatabase>(), getIt<GooglePlacesImportService>()),
+  );
   getIt.registerLazySingleton<FoodRepository>(() => getIt<LocalFoodRepository>());
 
   await getIt<LocalFoodRepository>().ensureSeeded();
