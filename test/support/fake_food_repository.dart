@@ -63,6 +63,9 @@ class FakeFoodRepository implements FoodRepository {
   Future<List<Restaurant>> getRestaurants() async => List.unmodifiable(restaurants);
 
   @override
+  Future<int> refreshRestaurantsFromGoogle() async => 0;
+
+  @override
   Future<void> removeBasketMatch(int matchId) async {
     basket.removeWhere((m) => m.id == matchId);
   }
