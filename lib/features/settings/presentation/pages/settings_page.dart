@@ -15,6 +15,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   late Future<List<int>> _picksFuture;
+  bool _importingFromGoogle = false;
 
   @override
   void initState() {
@@ -61,6 +62,32 @@ class _SettingsPageState extends State<SettingsPage> {
             onSelectionChanged: (set) => context.read<SettingsCubit>().setUnits(set.first),
           ),
           const Divider(),
+          FilledButton.icon(
+            onPressed: _importingFromGoogle
+                ? null
+                : () async {
+                    setState(() => _importingFromGoogle = true);
+                    try {
+                      final count = await context.read<DiscoverCubit>().refreshFromGoogleImport();
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Imported $count restaurants from Google Places')),
+                      );
+                    } catch (_) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Google import failed. Check API key and connectivity.')),
+                      );
+                    } finally {
+                      if (mounted) {
+                        setState(() => _importingFromGoogle = false);
+                      }
+                    }
+                  },
+            icon: const Icon(Icons.cloud_download_outlined),
+            label: Text(_importingFromGoogle ? 'Importing...' : 'Refresh from Google Places'),
+          ),
+          const SizedBox(height: 8),
           FilledButton.icon(
             onPressed: () async {
               final restaurants = context.read<DiscoverCubit>().state.restaurants.map((e) => e.id).toList();
