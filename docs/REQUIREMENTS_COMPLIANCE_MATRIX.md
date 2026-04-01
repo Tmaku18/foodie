@@ -7,7 +7,7 @@ Status values:
 
 | Requirement Area | Status | Implementation | Evidence |
 |---|---|---|---|
-| Offline only (no cloud / no external APIs) | Verified | Local-only code paths in `lib/`; no cloud SDKs in `pubspec.yaml` | `flutter analyze` + dependency inspection |
+| Offline runtime with optional Google import | Verified | App reads from local SQLite at runtime; optional Settings-triggered Places import upserts local DB | `lib/data/import/google_places_import_service.dart` + runtime behavior after import |
 | SQLite app data (`restaurants`, `menu_items`, `basket_matches`, `reviews_or_notes`) | Verified | `lib/core/db/app_database.dart` and `lib/data/repositories/local_food_repository.dart` | Runtime behavior in discover/details/basket |
 | SharedPreferences for settings only | Verified | `lib/core/settings/preferences_service.dart` | `test/unit/settings_cubit_test.dart` |
 | Onboarding screen | Verified | `lib/features/onboarding/presentation/pages/onboarding_page.dart` | first-run gating in `lib/app/app_root.dart` |
