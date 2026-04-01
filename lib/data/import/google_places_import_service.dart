@@ -30,16 +30,19 @@ class ImportedRestaurantRecord {
 }
 
 class GooglePlacesImportService {
-  GooglePlacesImportService({http.Client? client}) : _client = client ?? http.Client();
+  GooglePlacesImportService({http.Client? client, String? apiKey})
+      : _client = client ?? http.Client(),
+        _apiKey = apiKey;
 
   final http.Client _client;
+  final String? _apiKey;
 
   static const _nearbySearchUrl = 'https://places.googleapis.com/v1/places:searchNearby';
 
   Future<List<ImportedRestaurantRecord>> fetchNearbyRestaurants({
     int maxResultCount = 20,
   }) async {
-    final apiKey = const String.fromEnvironment('GOOGLE_MAPS_API_KEY');
+    final apiKey = _apiKey ?? const String.fromEnvironment('GOOGLE_MAPS_API_KEY');
     if (apiKey.isEmpty) {
       throw StateError('Missing GOOGLE_MAPS_API_KEY. Pass --dart-define=GOOGLE_MAPS_API_KEY=your_key');
     }
