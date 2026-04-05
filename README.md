@@ -25,23 +25,61 @@ flutter test
 flutter run
 ```
 
-## Optional Real-Data Refresh (Google Places)
+## Preload Google Places Into Packaged Seed
 
-The app still reads from local SQLite at runtime. You can optionally refresh local restaurant rows from Google Places for a 2-mile radius around GSU Student Center East.
+The app can ship with Google Places restaurants already bundled into the package (instead of only demo seed rows).  
+This is done by generating `lib/data/seed/generated_google_places_seed.dart` before running the app.
 
-Run with an API key:
+### 1) Set up Google Places API key (one-time)
+
+1. Open [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project (or select an existing one).
+3. Link a billing account to that project.
+4. Open **APIs & Services > Library** and enable **Places API (New)**.
+5. Open **APIs & Services > Credentials** and click **Create credentials > API key**.
+6. Restrict the key:
+   - **Application restrictions**: for local scripting, start with unrestricted or IP restricted as needed.
+   - **API restrictions**: select **Restrict key** and allow only **Places API (New)**.
+7. Save the key securely (do not commit it into git).
+
+### 2) Run preload script before app run
+
+PowerShell:
+
+```bash
+$env:GOOGLE_MAPS_API_KEY="your_api_key_here"
+dart run tool/preload_google_places_seed.dart
+```
+
+Optional flags:
+
+```bash
+dart run tool/preload_google_places_seed.dart --max-results=20 --out=lib/data/seed/generated_google_places_seed.dart
+```
+
+### 3) Run app normally
+
+```bash
+flutter run
+```
+
+On first launch, `ensureSeeded()` uses generated Google Places seed if present; otherwise it falls back to demo seed data.
+
+### 4) Optional in-app refresh flow
+
+You can still refresh from Google at runtime:
 
 ```bash
 flutter run --dart-define=GOOGLE_MAPS_API_KEY=your_api_key
 ```
 
-Then in app:
+Then:
 - Open `Settings`
 - Tap `Refresh from Google Places`
 
 Notes:
 - Runtime remains local-first after import.
-- If the API call fails, existing local SQLite data is preserved.
+- If an API call fails, existing local SQLite data is preserved.
 
 ## Repository Workflow
 
