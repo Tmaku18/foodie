@@ -1,6 +1,7 @@
 import 'package:foodie/core/db/app_database.dart';
 import 'package:foodie/core/models.dart';
 import 'package:foodie/data/import/google_places_import_service.dart';
+import 'package:foodie/data/seed/generated_google_places_seed.dart';
 import 'package:foodie/data/seed/seed_data.dart';
 import 'package:foodie/domain/repositories/food_repository.dart';
 
@@ -15,8 +16,18 @@ class LocalFoodRepository implements FoodRepository {
     final existing = await db.query('restaurants', limit: 1);
     if (existing.isNotEmpty) return;
 
+    final seedRestaurants = generatedGooglePlacesRestaurants.isNotEmpty
+        ? generatedGooglePlacesRestaurants
+        : demoRestaurants;
+    final seedMenus = generatedGooglePlacesRestaurants.isNotEmpty
+        ? _buildGeneratedMenuItems(generatedGooglePlacesRestaurants)
+        : demoMenuItems;
+    final source = generatedGooglePlacesRestaurants.isNotEmpty
+        ? 'google_places_seed'
+        : 'seed_local';
+
     final batch = db.batch();
-    for (final restaurant in demoRestaurants) {
+    for (final restaurant in seedRestaurants) {
       batch.insert('restaurants', {
         'id': restaurant.id,
         'name': restaurant.name,
@@ -25,10 +36,10 @@ class LocalFoodRepository implements FoodRepository {
         'rating': restaurant.rating,
         'building_image_asset': restaurant.buildingImageAsset,
         'food_images_csv': restaurant.foodImageAssets.join(','),
-        'source': 'seed_local',
+        'source': source,
       });
     }
-    for (final item in demoMenuItems) {
+    for (final item in seedMenus) {
       batch.insert('menu_items', {
         'id': item.id,
         'restaurant_id': item.restaurantId,
@@ -38,6 +49,26 @@ class LocalFoodRepository implements FoodRepository {
       });
     }
     await batch.commit(noResult: true);
+  }
+
+  List<MenuItem> _buildGeneratedMenuItems(List<Restaurant> restaurants) {
+    final menuItems = <MenuItem>[];
+    var menuId = 1;
+    for (final restaurant in restaurants) {
+      for (var i = 1; i <= 3; i++) {
+        menuItems.add(
+          MenuItem(
+            id: menuId,
+            restaurantId: restaurant.id,
+            name: 'Popular Item $i',
+            price: 7.99 + i,
+            description: 'Popular choice #$i at ${restaurant.name}.',
+          ),
+        );
+        menuId += 1;
+      }
+    }
+    return menuItems;
   }
 
   @override
@@ -66,11 +97,15 @@ class LocalFoodRepository implements FoodRepository {
     final db = await _database.database;
     final rows = await db.query('basket_matches', orderBy: 'created_at DESC');
     return rows
-        .map((row) => BasketMatch(
-              id: row['id'] as int,
-              restaurantId: row['restaurant_id'] as int,
-              createdAt: DateTime.fromMillisecondsSinceEpoch(row['created_at'] as int),
-            ))
+        .map(
+          (row) => BasketMatch(
+            id: row['id'] as int,
+            restaurantId: row['restaurant_id'] as int,
+            createdAt: DateTime.fromMillisecondsSinceEpoch(
+              row['created_at'] as int,
+            ),
+          ),
+        )
         .toList();
   }
 
@@ -83,13 +118,15 @@ class LocalFoodRepository implements FoodRepository {
       whereArgs: [restaurantId],
     );
     return rows
-        .map((row) => MenuItem(
-              id: row['id'] as int,
-              restaurantId: row['restaurant_id'] as int,
-              name: row['name'] as String,
-              price: (row['price'] as num).toDouble(),
-              description: row['description'] as String,
-            ))
+        .map(
+          (row) => MenuItem(
+            id: row['id'] as int,
+            restaurantId: row['restaurant_id'] as int,
+            name: row['name'] as String,
+            price: (row['price'] as num).toDouble(),
+            description: row['description'] as String,
+          ),
+        )
         .toList();
   }
 
@@ -103,12 +140,16 @@ class LocalFoodRepository implements FoodRepository {
       orderBy: 'updated_at DESC',
     );
     return rows
-        .map((row) => ReviewNote(
-              id: row['id'] as int,
-              restaurantId: row['restaurant_id'] as int,
-              text: row['text'] as String,
-              updatedAt: DateTime.fromMillisecondsSinceEpoch(row['updated_at'] as int),
-            ))
+        .map(
+          (row) => ReviewNote(
+            id: row['id'] as int,
+            restaurantId: row['restaurant_id'] as int,
+            text: row['text'] as String,
+            updatedAt: DateTime.fromMillisecondsSinceEpoch(
+              row['updated_at'] as int,
+            ),
+          ),
+        )
         .toList();
   }
 
@@ -117,15 +158,17 @@ class LocalFoodRepository implements FoodRepository {
     final db = await _database.database;
     final rows = await db.query('restaurants');
     return rows
-        .map((row) => Restaurant(
-              id: row['id'] as int,
-              name: row['name'] as String,
-              category: row['category'] as String,
-              distanceMiles: (row['distance_miles'] as num).toDouble(),
-              rating: (row['rating'] as num).toDouble(),
-              buildingImageAsset: row['building_image_asset'] as String,
-              foodImageAssets: (row['food_images_csv'] as String).split(','),
-            ))
+        .map(
+          (row) => Restaurant(
+            id: row['id'] as int,
+            name: row['name'] as String,
+            category: row['category'] as String,
+            distanceMiles: (row['distance_miles'] as num).toDouble(),
+            rating: (row['rating'] as num).toDouble(),
+            buildingImageAsset: row['building_image_asset'] as String,
+            foodImageAssets: (row['food_images_csv'] as String).split(','),
+          ),
+        )
         .toList();
   }
 
@@ -142,7 +185,9 @@ class LocalFoodRepository implements FoodRepository {
         whereArgs: [record.externalPlaceId],
         limit: 1,
       );
-      final id = existing.isNotEmpty ? existing.first['id'] as int : _stableIntId(record.externalPlaceId);
+      final id = existing.isNotEmpty
+          ? existing.first['id'] as int
+          : _stableIntId(record.externalPlaceId);
       final payload = {
         'id': id,
         'name': record.name,
@@ -150,7 +195,8 @@ class LocalFoodRepository implements FoodRepository {
         'distance_miles': record.distanceMiles,
         'rating': record.rating,
         'building_image_asset': 'assets/images/restaurant_building.png',
-        'food_images_csv': 'assets/images/food_1.png,assets/images/food_2.png,assets/images/food_3.png',
+        'food_images_csv':
+            'assets/images/food_1.png,assets/images/food_2.png,assets/images/food_3.png',
         'external_place_id': record.externalPlaceId,
         'source': record.source,
         'latitude': record.latitude,
@@ -193,10 +239,7 @@ class LocalFoodRepository implements FoodRepository {
     }
     await db.update(
       'reviews_or_notes',
-      {
-        'text': text,
-        'updated_at': DateTime.now().millisecondsSinceEpoch,
-      },
+      {'text': text, 'updated_at': DateTime.now().millisecondsSinceEpoch},
       where: 'id = ?',
       whereArgs: [existing.first['id']],
     );
