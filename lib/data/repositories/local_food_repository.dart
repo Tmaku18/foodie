@@ -180,7 +180,7 @@ class LocalFoodRepository implements FoodRepository {
     for (final record in imported) {
       final existing = await db.query(
         'restaurants',
-        columns: ['id'],
+        columns: ['id', 'building_image_asset', 'food_images_csv'],
         where: 'external_place_id = ?',
         whereArgs: [record.externalPlaceId],
         limit: 1,
@@ -188,14 +188,23 @@ class LocalFoodRepository implements FoodRepository {
       final id = existing.isNotEmpty
           ? existing.first['id'] as int
           : _stableIntId(record.externalPlaceId);
+      final existingBuildingImageAsset = existing.isNotEmpty
+          ? (existing.first['building_image_asset'] as String?)
+          : null;
+      final existingFoodImagesCsv = existing.isNotEmpty
+          ? (existing.first['food_images_csv'] as String?)
+          : null;
       final payload = {
         'id': id,
         'name': record.name,
         'category': record.category,
         'distance_miles': record.distanceMiles,
         'rating': record.rating,
-        'building_image_asset': 'assets/images/restaurant_building.png',
+        'building_image_asset':
+            existingBuildingImageAsset ??
+            'assets/images/restaurant_building.png',
         'food_images_csv':
+            existingFoodImagesCsv ??
             'assets/images/food_1.png,assets/images/food_2.png,assets/images/food_3.png',
         'external_place_id': record.externalPlaceId,
         'source': record.source,
