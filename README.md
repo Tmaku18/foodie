@@ -81,6 +81,48 @@ Notes:
 - Runtime remains local-first after import.
 - If an API call fails, existing local SQLite data is preserved.
 
+## Manual Menu Price Overrides
+
+When website scraping is noisy or inconsistent, force exact prices for key items with `data/menu_price_overrides.json`.
+
+1. Copy `data/menu_price_overrides.example.json` to `data/menu_price_overrides.json` (or edit the existing file).
+2. Add target restaurants/items and expected prices.
+3. Run the menu seed pipeline:
+
+```bash
+dart run tool/load_menu_from_websites.dart
+dart run tool/clean_menu_seed.dart --overrides=data/menu_price_overrides.json
+dart run tool/load_menu_seed.dart
+```
+
+Override file shape:
+
+```json
+[
+  {
+    "restaurantName": "Hungry AF Downtown",
+    "items": [
+      {
+        "name": "6pc Wing w/ Fries",
+        "price": 12.99,
+        "addIfMissing": true
+      },
+      {
+        "name": "10pc Wings w/ Fries",
+        "price": 17.99,
+        "setName": "10pc Wings w/ Fries"
+      }
+    ]
+  }
+]
+```
+
+Notes:
+- `name` is the match key (case/punctuation insensitive).
+- `price` is required and wins over scraped price.
+- `setName` is optional and can rename the saved menu item.
+- `addIfMissing` defaults to `true` so key rows can be inserted even if scrape misses them.
+
 ## Repository Workflow
 
 `foodie-atomic-main` is the default mainline branch for this repository.
