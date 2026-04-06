@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get_it/get_it.dart';
 import 'package:foodie/core/db/app_database.dart';
 import 'package:foodie/core/services/advanced_features_coordinator.dart';
@@ -31,11 +33,15 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<FoodRepository>(() => getIt<LocalFoodRepository>());
 
-  await getIt<LocalFoodRepository>().ensureSeeded();
-  await getIt<LocalNotificationService>().init();
-  await getIt<AdvancedFeaturesCoordinator>().start();
-
   getIt.registerFactory(() => SettingsCubit(getIt<PreferencesService>()));
   getIt.registerFactory(() => DiscoverCubit(getIt<FoodRepository>()));
   getIt.registerFactory(() => BasketCubit(getIt<FoodRepository>()));
+
+  // Keep startup responsive: non-critical init can run after DI is ready.
+  unawaited(_startBackgroundServices());
+}
+
+Future<void> _startBackgroundServices() async {
+  await getIt<LocalNotificationService>().init();
+  await getIt<AdvancedFeaturesCoordinator>().start();
 }

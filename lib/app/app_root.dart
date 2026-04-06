@@ -15,12 +15,35 @@ class AppRoot extends StatefulWidget {
 
 class _AppRootState extends State<AppRoot> {
   int _index = 0;
+  bool _placeholderNoticeShown = false;
 
   @override
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsCubit>().state;
     if (!settings.onboardingSeen) {
       return const OnboardingPage();
+    }
+    if (!_placeholderNoticeShown) {
+      _placeholderNoticeShown = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Menu price note'),
+            content: const Text(
+              'A * next to a price means it is a placeholder estimate. '
+              'Placeholder prices are used when a verified menu price is unavailable.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Got it'),
+              ),
+            ],
+          ),
+        );
+      });
     }
 
     final pages = const [DiscoverPage(), BasketPage(), SettingsPage()];

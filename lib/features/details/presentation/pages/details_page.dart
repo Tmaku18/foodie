@@ -52,46 +52,92 @@ class _DetailsPageState extends State<DetailsPage> {
     await _load();
   }
 
+  bool _isPlaceholderPrice(MenuItem item) {
+    return item.description.contains('Placeholder price estimate (*)');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(widget.restaurant.name)),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                Text('Menu', style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                for (final item in _menu.take(8))
-                  ListTile(
-                    title: Text(item.name),
-                    subtitle: Text(item.description),
-                    trailing: Text('\$${item.price.toStringAsFixed(2)}'),
-                  ),
-                const Divider(),
-                Text('Your notes/review', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _noteController,
-                  maxLines: 3,
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                ),
-                const SizedBox(height: 8),
-                FilledButton(onPressed: _saveNote, child: const Text('Save note')),
-                if (_notes.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text('Saved notes', style: Theme.of(context).textTheme.titleMedium),
-                  for (final note in _notes)
-                    ListTile(
-                      title: Text(note.text),
-                      subtitle: Text('Updated ${note.updatedAt.toLocal()}'),
-                      trailing: IconButton(
-                        onPressed: () => _deleteNote(note.id),
-                        icon: const Icon(Icons.delete_outline),
-                      ),
+          : CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                  sliver: SliverToBoxAdapter(
+                    child: Text(
+                      'Menu',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                ],
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final item = _menu[index];
+                        final placeholder = _isPlaceholderPrice(item);
+                        return ListTile(
+                          title: Text(item.name),
+                          subtitle: Text(item.description),
+                          trailing: Text(
+                            '\$${item.price.toStringAsFixed(2)}${placeholder ? '*' : ''}',
+                          ),
+                        );
+                      },
+                      childCount: _menu.length,
+                    ),
+                  ),
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.all(16),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Divider(),
+                        Text(
+                          'Your notes/review',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _noteController,
+                          maxLines: 3,
+                          decoration: const InputDecoration(
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        FilledButton(
+                          onPressed: _saveNote,
+                          child: const Text('Save note'),
+                        ),
+                        if (_notes.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            'Saved notes',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          for (final note in _notes)
+                            ListTile(
+                              title: Text(note.text),
+                              subtitle: Text(
+                                'Updated ${note.updatedAt.toLocal()}',
+                              ),
+                              trailing: IconButton(
+                                onPressed: () => _deleteNote(note.id),
+                                icon: const Icon(Icons.delete_outline),
+                              ),
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
     );
